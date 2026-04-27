@@ -41,5 +41,30 @@ export const LoanModel = {
     `;
     const result = await pool.query(query);
     return result.rows;
+  },
+
+  async getTopBorrowers() {
+    const query = `
+      SELECT 
+        m.id_mahasiswa, 
+        m.nama, 
+        m.jurusan,
+        COUNT(l.id_pinjam) AS total_pinjaman,
+        MAX(l.tanggal_pinjam) AS pinjaman_terakhir,
+        (SELECT b.judul_buku 
+         FROM loans l2 
+         JOIN books b ON l2.id_buku = b.id_buku 
+         WHERE l2.id_mahasiswa = m.id_mahasiswa 
+         GROUP BY b.judul_buku 
+         ORDER BY COUNT(*) DESC LIMIT 1) AS buku_favorit
+      FROM mahasiswa m
+      JOIN loans l ON m.id_mahasiswa = l.id_mahasiswa
+      GROUP BY m.id_mahasiswa, m.nama, m.jurusan
+      ORDER BY total_pinjaman DESC
+      LIMIT 3;
+    `;
+    const result = await pool.query(query);
+    return result.rows;
   }
+
 };

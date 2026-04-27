@@ -22,5 +22,17 @@ export const LoanController = {
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
+  },
+
+  async getTop3(req, res) {
+    try {
+      const data = await LoanModel.getTopBorrowers();
+      if (data.length === 0) {
+        return res.status(404).json({ message: "Data tidak ditemukan" });
+      }
+      res.status(200).json(data);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   }
 };
