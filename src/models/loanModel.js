@@ -43,20 +43,6 @@ export const LoanModel = {
     return result.rows;
   },
 
-  Berdasarkan skema database terbaru yang Anda berikan, tabel Anda menggunakan tipe data UUID dan nama kolom dalam bahasa Inggris (seperti full_name, book_id, member_id).
-
-Berikut adalah modifikasi file src/models/loanModel.js yang disesuaikan dengan skema database tersebut:
-
-Modifikasi src/models/loanModel.js
-JavaScript
-import { pool } from "../config/db.js";
-
-export const LoanModel = {
-  /**
-   * Mengambil Top 3 Peminjam berdasarkan jumlah transaksi di tabel loans.
-   * Menggunakan Join ke tabel members untuk data lengkap 
-   * dan Subquery ke tabel books untuk mencari judul buku favorit.
-   */
   async getTopBorrowers() {
     const query = `
       SELECT 
