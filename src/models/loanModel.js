@@ -43,26 +43,45 @@ export const LoanModel = {
     return result.rows;
   },
 
+  Berdasarkan skema database terbaru yang Anda berikan, tabel Anda menggunakan tipe data UUID dan nama kolom dalam bahasa Inggris (seperti full_name, book_id, member_id).
+
+Berikut adalah modifikasi file src/models/loanModel.js yang disesuaikan dengan skema database tersebut:
+
+Modifikasi src/models/loanModel.js
+JavaScript
+import { pool } from "../config/db.js";
+
+export const LoanModel = {
+  /**
+   * Mengambil Top 3 Peminjam berdasarkan jumlah transaksi di tabel loans.
+   * Menggunakan Join ke tabel members untuk data lengkap 
+   * dan Subquery ke tabel books untuk mencari judul buku favorit.
+   */
   async getTopBorrowers() {
     const query = `
       SELECT 
-        m.id_mahasiswa, 
-        m.nama, 
-        m.jurusan,
-        COUNT(l.id_pinjam) AS total_pinjaman,
-        MAX(l.tanggal_pinjam) AS pinjaman_terakhir,
-        (SELECT b.judul_buku 
-         FROM loans l2 
-         JOIN books b ON l2.id_buku = b.id_buku 
-         WHERE l2.id_mahasiswa = m.id_mahasiswa 
-         GROUP BY b.judul_buku 
-         ORDER BY COUNT(*) DESC LIMIT 1) AS buku_favorit
-      FROM mahasiswa m
-      JOIN loans l ON m.id_mahasiswa = l.id_mahasiswa
-      GROUP BY m.id_mahasiswa, m.nama, m.jurusan
+        m.id, 
+        m.full_name, 
+        m.email, 
+        m.member_type,
+        COUNT(l.id) AS total_pinjaman,
+        MAX(l.loan_date) AS pinjaman_terakhir,
+        (
+          SELECT b.title 
+          FROM loans l2 
+          JOIN books b ON l2.book_id = b.id 
+          WHERE l2.member_id = m.id 
+          GROUP BY b.title 
+          ORDER BY COUNT(*) DESC 
+          LIMIT 1
+        ) AS buku_favorit
+      FROM members m
+      JOIN loans l ON m.id = l.member_id
+      GROUP BY m.id, m.full_name, m.email, m.member_type
       ORDER BY total_pinjaman DESC
       LIMIT 3;
     `;
+    
     const result = await pool.query(query);
     return result.rows;
   }
